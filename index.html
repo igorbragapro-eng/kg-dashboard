@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KG Home Remodeling — Dashboard de Anúncios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F3EE;
+  --surface: #FFFFFF;
+  --surface2: #EFEDE8;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --ink: #1A1A16;
+  --ink2: #6B6B62;
+  --ink3: #A8A89F;
+  --gold: #C8A84B;
+  --gold-light: #F5E9C4;
+  --green: #2D7A50;
+  --green-light: #D4EDDF;
+  --red: #C0392B;
+  --red-light: #FAD7D3;
+  --amber: #B8620A;
+  --amber-light: #FAE8CC;
+  --blue: #1E4ED8;
+  --blue-light: #DBEAFE;
+  --font: 'Cabinet Grotesk', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); min-height: 100vh; }
+
+/* HEADER */
+.header {
+  background: var(--ink);
+  color: #F5F3EE;
+  padding: 40px 40px 36px;
+  position: relative;
+  overflow: hidden;
+}
+.header::after {
+  content: 'ADS';
+  position: absolute;
+  right: -10px; top: -20px;
+  font-size: 160px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.03);
+  font-family: var(--font);
+  pointer-events: none;
+  line-height: 1;
+}
+.header-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.header-tag::before {
+  content: '';
+  display: inline-block;
+  width: 5px; height: 5px;
+  background: var(--gold);
+  border-radius: 50%;
+}
+.header-title { font-size: clamp(24px,3.5vw,40px); font-weight: 900; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 8px; }
+.header-title em { color: var(--gold); font-style: normal; }
+.header-sub { font-size: 13px; color: rgba(245,243,238,0.5); font-weight: 400; }
+.header-meta {
+  display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;
+}
+.header-stat { }
+.header-stat-val { font-size: 22px; font-weight: 800; color: #F5F3EE; }
+.header-stat-lbl { font-size: 10px; font-family: var(--mono); color: rgba(245,243,238,0.4); text-transform: uppercase; letter-spacing: .08em; }
+.header-divider { width: 1px; background: rgba(255,255,255,0.1); align-self: stretch; }
+
+/* WRAP */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* TABS */
+.tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 2px solid var(--border2); overflow-x: auto; }
+.tabs::-webkit-scrollbar { height: 0; }
+.tab-btn {
+  font-family: var(--font); font-size: 13px; font-weight: 700;
+  padding: 11px 20px; background: transparent; border: none;
+  color: var(--ink3); cursor: pointer; white-space: nowrap;
+  position: relative; transition: color .2s; letter-spacing: .01em;
+}
+.tab-btn.active { color: var(--ink); }
+.tab-btn.active::after {
+  content: '';
+  position: absolute; bottom: -2px; left: 0; right: 0; height: 2px;
+  background: var(--ink);
+}
+.tab-panel { display: none; animation: fadeUp .3s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* KPI GRID */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 10px; margin-bottom: 24px; }
+.kpi {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px;
+  position: relative; overflow: hidden;
+}
+.kpi-accent { border-left: 3px solid var(--gold); }
+.kpi-green { border-left: 3px solid var(--green); }
+.kpi-red { border-left: 3px solid var(--red); }
+.kpi-blue { border-left: 3px solid var(--blue); }
+.kpi-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: .1em; color: var(--ink3); text-transform: uppercase; margin-bottom: 6px; }
+.kpi-val { font-size: 24px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -.02em; }
+.kpi-sub { font-size: 11px; color: var(--ink3); margin-top: 4px; }
+.badge { display: inline-block; font-size: 10px; font-weight: 700; font-family: var(--mono); padding: 2px 7px; border-radius: 4px; margin-top: 5px; }
+.b-green { background: var(--green-light); color: var(--green); }
+.b-red { background: var(--red-light); color: var(--red); }
+.b-amber { background: var(--amber-light); color: var(--amber); }
+.b-blue { background: var(--blue-light); color: var(--blue); }
+.b-gold { background: var(--gold-light); color: #7A5C00; }
+
+/* SECTION TITLE */
+.sec-title {
+  font-size: 10px; font-weight: 700; font-family: var(--mono);
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink3);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+}
+.sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+
+/* CARD */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin-bottom: 14px; }
+.card-title { font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+.card-sub { font-size: 12px; color: var(--ink3); margin-bottom: 18px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media(max-width:600px){.two-col{grid-template-columns:1fr}}
+
+/* AD CARD */
+.ad-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 14px; margin-bottom: 14px; }
+.ad-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; position: relative;
+  transition: border-color .2s, box-shadow .2s; cursor: default;
+}
+.ad-card:hover { border-color: var(--border2); box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+.ad-card-winner {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, #FFFDF5 0%, #FFFFFF 100%);
+}
+.ad-card-winner::before {
+  content: '🏆 MELHOR PERFORMER';
+  position: absolute; top: -1px; right: 16px;
+  background: var(--gold); color: #FFF;
+  font-size: 9px; font-weight: 700; font-family: var(--mono);
+  letter-spacing: .08em; padding: 3px 10px;
+  border-radius: 0 0 6px 6px;
+}
+.ad-card-second {
+  border-color: #A8A89F;
+}
+.ad-card-second::before {
+  content: '🥈 2° LUGAR';
+  position: absolute; top: -1px; right: 16px;
+  background: #6B6B62; color: #FFF;
+  font-size: 9px; font-weight: 700; font-family: var(--mono);
+  letter-spacing: .08em; padding: 3px 10px;
+  border-radius: 0 0 6px 6px;
+}
+.ad-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  color: var(--ink3); margin-bottom: 6px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ad-name { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 12px; line-height: 1.3; }
+.ad-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ad-metric { }
+.ad-metric-lbl { font-size: 9px; font-family: var(--mono); color: var(--ink3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+.ad-metric-val { font-size: 16px; font-weight: 800; color: var(--ink); }
+.ad-metric-val.green { color: var(--green); }
+.ad-metric-val.red { color: var(--red); }
+.ad-metric-val.amber { color: var(--amber); }
+.ad-ranking { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.rank-pill {
+  font-size: 9px; font-family: var(--mono); font-weight: 500;
+  padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+}
+.rp-avg { background: #E8F4FD; color: #1565C0; }
+.rp-below { background: var(--red-light); color: var(--red); }
+.rp-above { background: var(--green-light); color: var(--green); }
+.rp-na { background: var(--surface2); color: var(--ink3); }
+
+/* INSIGHT CARDS */
+.insight-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 20px 16px 24px;
+  margin-bottom: 10px; position: relative;
+}
+.insight-card::before {
+  content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 3px;
+  border-radius: 10px 0 0 10px;
+}
+.ic-danger::before { background: var(--red); }
+.ic-warn::before { background: var(--amber); }
+.ic-ok::before { background: var(--green); }
+.ic-info::before { background: var(--blue); }
+.ic-gold::before { background: var(--gold); }
+.insight-title { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.insight-text { font-size: 12px; color: var(--ink2); line-height: 1.65; }
+.priority-tag { font-size: 9px; font-family: var(--mono); font-weight: 700; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.pt-high { background: var(--red-light); color: var(--red); }
+.pt-med { background: var(--amber-light); color: var(--amber); }
+.pt-low { background: var(--green-light); color: var(--green); }
+.pt-info { background: var(--blue-light); color: var(--blue); }
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { text-align: left; font-family: var(--mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); padding: 8px 12px; border-bottom: 2px solid var(--border2); font-weight: 500; }
+td { padding: 10px 12px; color: var(--ink); border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+/* BAR COMPARE */
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12px; }
+.bar-lbl { width: 140px; flex-shrink: 0; color: var(--ink2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+.bar-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; }
+.bar-val { width: 60px; text-align: right; font-weight: 800; font-family: var(--mono); font-size: 11px; color: var(--ink); flex-shrink: 0; }
+
+/* CREATIVE DOSSIER */
+.dossier { background: var(--ink); color: #F5F3EE; border-radius: 12px; padding: 24px; margin-bottom: 14px; }
+.dossier-title { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+.dossier-title em { color: var(--gold); font-style: normal; }
+.dossier-sub { font-size: 12px; color: rgba(245,243,238,0.5); margin-bottom: 20px; }
+.dossier-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 12px; }
+.dossier-item { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 14px; }
+.dossier-item-lbl { font-size: 9px; font-family: var(--mono); color: rgba(245,243,238,0.4); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.dossier-item-val { font-size: 15px; font-weight: 800; color: #F5F3EE; }
+.dossier-item-sub { font-size: 10px; color: rgba(245,243,238,0.4); margin-top: 2px; }
+
+/* SCROLL TOP */
+.scroll-top {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 38px; height: 38px;
+  background: var(--ink); color: var(--bg);
+  border: none; border-radius: 8px; font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; z-index: 100; opacity: 0; transition: opacity .2s;
+}
+.scroll-top.show { opacity: 1; }
+
+.fn { font-size: 10px; color: var(--ink3); margin-top: 8px; font-style: italic; }
+
+/* SCORE CIRCLE */
+.score-wrap { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.score-item { text-align: center; }
+.score-circle {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900;
+  margin: 0 auto 6px;
+}
+.sc-gold { background: var(--gold-light); color: #7A5C00; border: 2px solid var(--gold); }
+.sc-green { background: var(--green-light); color: var(--green); border: 2px solid var(--green); }
+.sc-red { background: var(--red-light); color: var(--red); border: 2px solid var(--red); }
+.sc-amber { background: var(--amber-light); color: var(--amber); border: 2px solid var(--amber); }
+.score-lbl { font-size: 10px; font-family: var(--mono); color: var(--ink3); text-transform: uppercase; letter-spacing: .06em; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div style="max-width:1100px;margin:0 auto;padding:0 24px">
+    <div class="header-tag">Análise de anúncios · 6 criativos · Abr 2023 – Mai 2026</div>
+    <div class="header-title">Dashboard de <em>Criativos</em><br>KG Home Remodeling</div>
+    <div class="header-sub">Todos os anúncios ativos da conta · Análise de performance, rankings e insights para novos criativos</div>
+    <div class="header-meta">
+      <div class="header-stat">
+        <div class="header-stat-val">$515,37</div>
+        <div class="header-stat-lbl">Investimento total</div>
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-stat">
+        <div class="header-stat-val">21</div>
+        <div class="header-stat-lbl">Conversas geradas</div>
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-stat">
+        <div class="header-stat-val">$24,54</div>
+        <div class="header-stat-lbl">CPL médio</div>
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-stat">
+        <div class="header-stat-val">6</div>
+        <div class="header-stat-lbl">Criativos analisados</div>
+      </div>
+      <div class="header-divider"></div>
+      <div class="header-stat">
+        <div class="header-stat-val">100%</div>
+        <div class="header-stat-lbl">Formato vídeo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="sw('overview',this)">Visão Geral</button>
+    <button class="tab-btn" onclick="sw('criativos',this)">Criativos</button>
+    <button class="tab-btn" onclick="sw('rankings',this)">Rankings</button>
+    <button class="tab-btn" onclick="sw('hook',this)">Hook & Retenção</button>
+    <button class="tab-btn" onclick="sw('insights',this)">Insights</button>
+    <button class="tab-btn" onclick="sw('novos',this)">Novos Criativos</button>
+  </div>
+
+  <!-- TAB: OVERVIEW -->
+  <div id="panel-overview" class="tab-panel active">
+    <div class="sec-title">KPIs consolidados — todos os anúncios</div>
+    <div class="kpi-grid">
+      <div class="kpi kpi-accent">
+        <div class="kpi-lbl">Invest. total</div>
+        <div class="kpi-val">$515</div>
+        <div class="kpi-sub">6 criativos no período</div>
+        <div class="badge b-gold">Abr 23 – Mai 26</div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-lbl">Melhor CPL</div>
+        <div class="kpi-val">$16,89</div>
+        <div class="kpi-sub">ADS03 — Vídeo Kevin</div>
+        <div class="badge b-green">🏆 Winner</div>
+      </div>
+      <div class="kpi kpi-red">
+        <div class="kpi-lbl">Pior CPL</div>
+        <div class="kpi-val">$26,52</div>
+        <div class="kpi-sub">ADS01 — Você está procurando</div>
+        <div class="badge b-red">Revisar</div>
+      </div>
+      <div class="kpi kpi-blue">
+        <div class="kpi-lbl">Melhor Hook Rate</div>
+        <div class="kpi-val">25,1%</div>
+        <div class="kpi-sub">ADS04 — Bastidores reforma</div>
+        <div class="badge b-blue">Melhor abertura</div>
+      </div>
+      <div class="kpi kpi-accent">
+        <div class="kpi-lbl">Melhor Body Rate</div>
+        <div class="kpi-val">11,39%</div>
+        <div class="kpi-sub">ADS05 — $8 mil dólares</div>
+        <div class="badge b-gold">Maior retenção</div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-lbl">Melhor CTR</div>
+        <div class="kpi-val">1,49%</div>
+        <div class="kpi-sub">ADS02 — Prova Social</div>
+        <div class="badge b-green">Mais cliques</div>
+      </div>
+      <div class="kpi kpi-blue">
+        <div class="kpi-lbl">Total impressões</div>
+        <div class="kpi-val">17.299</div>
+        <div class="kpi-sub">Todos os anúncios</div>
+      </div>
+      <div class="kpi kpi-red">
+        <div class="kpi-lbl">CPM médio</div>
+        <div class="kpi-val">$28,70</div>
+        <div class="kpi-sub">Acima do ideal $18–25</div>
+        <div class="badge b-red">Alto</div>
+      </div>
+    </div>
+
+    <div class="sec-title">CPL comparativo por anúncio</div>
+    <div class="card">
+      <div class="card-title">Custo por resultado — ranking do melhor ao pior</div>
+      <div class="card-sub">Apenas anúncios com conversão registrada. ADS04 e ADS05 sem dado de resultado.</div>
+      <div style="height:220px;position:relative">
+        <canvas id="cplChart"></canvas>
+      </div>
+      <p class="fn">Linha tracejada = benchmark máximo recomendado para o nicho ($25/conversa Messenger)</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Distribuição do investimento</div>
+        <div class="card-sub">% de gasto por criativo</div>
+        <div style="height:200px;position:relative">
+          <canvas id="spendChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Conversas geradas por criativo</div>
+        <div class="card-sub">Total: 21 conversas iniciadas</div>
+        <div style="height:200px;position:relative">
+          <canvas id="convChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CRIATIVOS -->
+  <div id="panel-criativos" class="tab-panel">
+    <div class="sec-title">Análise individual — todos os 6 criativos</div>
+
+    <!-- WINNER -->
+    <div class="dossier">
+      <div class="dossier-title">🏆 Criativo vencedor — <em>ADS03 [VIDEO] [KEVIN]</em></div>
+      <div class="dossier-sub">Melhor CPL da conta · $135,15 investidos · 8 conversas · Maior alcance único</div>
+      <div class="dossier-grid">
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">CPL</div>
+          <div class="dossier-item-val">$16,89</div>
+          <div class="dossier-item-sub">Melhor da conta</div>
+        </div>
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">Alcance</div>
+          <div class="dossier-item-val">2.488</div>
+          <div class="dossier-item-sub">Maior alcance único</div>
+        </div>
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">Hook Rate</div>
+          <div class="dossier-item-val">22,8%</div>
+          <div class="dossier-item-sub">2° melhor abertura</div>
+        </div>
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">Conversas</div>
+          <div class="dossier-item-val">8</div>
+          <div class="dossier-item-sub">38% do total</div>
+        </div>
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">CPM</div>
+          <div class="dossier-item-val">$28,29</div>
+          <div class="dossier-item-sub">Mais eficiente</div>
+        </div>
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">Frequência</div>
+          <div class="dossier-item-val">1,92×</div>
+          <div class="dossier-item-sub">Saudável</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ad-grid">
+
+      <div class="ad-card ad-card-winner">
+        <div class="ad-num">
+          <span>ADS03</span>
+          <span class="badge b-green">CPL $16,89</span>
+        </div>
+        <div class="ad-name">[VIDEO] KEVIN</div>
+        <div class="ad-metrics">
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Gasto</div>
+            <div class="ad-metric-val">$135,15</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Conversas</div>
+            <div class="ad-metric-val green">8</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Alcance</div>
+            <div class="ad-metric-val">2.488</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Hook Rate</div>
+            <div class="ad-metric-val">22,8%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CTR</div>
+            <div class="ad-metric-val">1,47%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CPM</div>
+            <div class="ad-metric-val">$28,29</div>
+          </div>
+        </div>
+        <div class="ad-ranking">
+          <span class="rank-pill rp-na">Qualidade: —</span>
+          <span class="rank-pill rp-below">Engaj: Abaixo</span>
+          <span class="rank-pill rp-below">Conv: Abaixo</span>
+        </div>
+      </div>
+
+      <div class="ad-card ad-card-second">
+        <div class="ad-num">
+          <span>ADS02</span>
+          <span class="badge b-amber">CPL $23,77</span>
+        </div>
+        <div class="ad-name">[VIDEO] PROVA SOCIAL</div>
+        <div class="ad-metrics">
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Gasto</div>
+            <div class="ad-metric-val">$166,42</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Conversas</div>
+            <div class="ad-metric-val amber">7</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Alcance</div>
+            <div class="ad-metric-val">2.268</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Hook Rate</div>
+            <div class="ad-metric-val">22,6%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CTR</div>
+            <div class="ad-metric-val green">1,49%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CPM</div>
+            <div class="ad-metric-val red">$33,90</div>
+          </div>
+        </div>
+        <div class="ad-ranking">
+          <span class="rank-pill rp-below">Qualidade: Abaixo</span>
+          <span class="rank-pill rp-avg">Engaj: Médio</span>
+          <span class="rank-pill rp-below">Conv: Abaixo</span>
+        </div>
+      </div>
+
+      <div class="ad-card">
+        <div class="ad-num">
+          <span>ADS06</span>
+          <span class="badge b-amber">CPL $22,19</span>
+        </div>
+        <div class="ad-name">[VIDEO] BANHEIRO DEVE SER DE LUXO</div>
+        <div class="ad-metrics">
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Gasto</div>
+            <div class="ad-metric-val">$110,95</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Conversas</div>
+            <div class="ad-metric-val amber">5</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Alcance</div>
+            <div class="ad-metric-val">1.648</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Hook Rate</div>
+            <div class="ad-metric-val">18,7%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CTR</div>
+            <div class="ad-metric-val green">0,95%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CPM</div>
+            <div class="ad-metric-val">$28,48</div>
+          </div>
+        </div>
+        <div class="ad-ranking">
+          <span class="rank-pill rp-below">Qualidade: Abaixo</span>
+          <span class="rank-pill rp-below">Engaj: Abaixo</span>
+          <span class="rank-pill rp-avg">Conv: Médio</span>
+        </div>
+      </div>
+
+      <div class="ad-card">
+        <div class="ad-num">
+          <span>ADS01</span>
+          <span class="badge b-red">CPL $26,52</span>
+        </div>
+        <div class="ad-name">[VIDEO] VOCÊ ESTÁ PROCURANDO</div>
+        <div class="ad-metrics">
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Gasto</div>
+            <div class="ad-metric-val">$26,52</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Conversas</div>
+            <div class="ad-metric-val red">1</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Alcance</div>
+            <div class="ad-metric-val">634</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Hook Rate</div>
+            <div class="ad-metric-val">19,4%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CTR</div>
+            <div class="ad-metric-val">1,40%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CPM</div>
+            <div class="ad-metric-val">$26,55</div>
+          </div>
+        </div>
+        <div class="ad-ranking">
+          <span class="rank-pill rp-na">Qualidade: —</span>
+          <span class="rank-pill rp-na">Engaj: —</span>
+          <span class="rank-pill rp-na">Conv: —</span>
+        </div>
+      </div>
+
+      <div class="ad-card">
+        <div class="ad-num">
+          <span>ADS04</span>
+          <span class="badge b-blue">Sem conversão</span>
+        </div>
+        <div class="ad-name">[VIDEO] BASTIDORES REFORMA</div>
+        <div class="ad-metrics">
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Gasto</div>
+            <div class="ad-metric-val">$50,96</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Conversas</div>
+            <div class="ad-metric-val" style="color:var(--ink3)">—</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Alcance</div>
+            <div class="ad-metric-val">820</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Hook Rate</div>
+            <div class="ad-metric-val green">25,1%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CTR</div>
+            <div class="ad-metric-val green">0,64%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CPM</div>
+            <div class="ad-metric-val">$29,63</div>
+          </div>
+        </div>
+        <div class="ad-ranking">
+          <span class="rank-pill rp-avg">Qualidade: Médio</span>
+          <span class="rank-pill rp-below">Engaj: Abaixo</span>
+          <span class="rank-pill rp-below">Conv: Abaixo</span>
+        </div>
+      </div>
+
+      <div class="ad-card">
+        <div class="ad-num">
+          <span>ADS05</span>
+          <span class="badge b-blue">Sem conversão</span>
+        </div>
+        <div class="ad-name">[VIDEO] $8 MIL DÓLARES</div>
+        <div class="ad-metrics">
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Gasto</div>
+            <div class="ad-metric-val">$25,32</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Conversas</div>
+            <div class="ad-metric-val" style="color:var(--ink3)">—</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Alcance</div>
+            <div class="ad-metric-val">521</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Hook Rate</div>
+            <div class="ad-metric-val">23,1%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">Body Rate</div>
+            <div class="ad-metric-val green">11,4%</div>
+          </div>
+          <div class="ad-metric">
+            <div class="ad-metric-lbl">CPM</div>
+            <div class="ad-metric-val green">$25,47</div>
+          </div>
+        </div>
+        <div class="ad-ranking">
+          <span class="rank-pill rp-na">Qualidade: —</span>
+          <span class="rank-pill rp-na">Engaj: —</span>
+          <span class="rank-pill rp-na">Conv: —</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB: RANKINGS -->
+  <div id="panel-rankings" class="tab-panel">
+    <div class="sec-title">Ranking completo — comparativo visual</div>
+
+    <div class="card">
+      <div class="card-title">Ranking por CPL — do melhor ao pior</div>
+      <div class="card-sub">Somente anúncios com resultado registrado</div>
+      <div class="bar-row"><span class="bar-lbl">ADS03 Kevin</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#2D7A50"></div></div><span class="bar-val" style="color:var(--green)">$16,89</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS06 Banheiro luxo</span><div class="bar-track"><div class="bar-fill" style="width:82%;background:#B8620A"></div></div><span class="bar-val" style="color:var(--amber)">$22,19</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS02 Prova social</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:#B8620A"></div></div><span class="bar-val" style="color:var(--amber)">$23,77</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS01 Procurando</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#C0392B"></div></div><span class="bar-val" style="color:var(--red)">$26,52</span></div>
+      <p class="fn">ADS04 e ADS05 sem conversão registrada — podem ter tido volume insuficiente para atribuição</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ranking por Hook Rate — quem prende no primeiro segundo</div>
+      <div class="card-sub">Hook Rate = % de pessoas que assistiram além dos primeiros 3 segundos</div>
+      <div class="bar-row"><span class="bar-lbl">ADS04 Bastidores</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#1E4ED8"></div></div><span class="bar-val" style="color:var(--blue)">25,1%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS05 $8 mil</span><div class="bar-track"><div class="bar-fill" style="width:92%;background:#2D7A50"></div></div><span class="bar-val" style="color:var(--green)">23,1%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS03 Kevin</span><div class="bar-track"><div class="bar-fill" style="width:91%;background:#2D7A50"></div></div><span class="bar-val" style="color:var(--green)">22,8%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS02 Prova social</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#2D7A50"></div></div><span class="bar-val" style="color:var(--green)">22,6%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS01 Procurando</span><div class="bar-track"><div class="bar-fill" style="width:77%;background:#B8620A"></div></div><span class="bar-val" style="color:var(--amber)">19,4%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS06 Banheiro luxo</span><div class="bar-track"><div class="bar-fill" style="width:74%;background:#B8620A"></div></div><span class="bar-val" style="color:var(--amber)">18,7%</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ranking por Body Rate — quem retém o público no meio do vídeo</div>
+      <div class="card-sub">Body Rate = retenção após os primeiros segundos. Indica qualidade do conteúdo intermediário.</div>
+      <div class="bar-row"><span class="bar-lbl">ADS05 $8 mil</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#C8A84B"></div></div><span class="bar-val" style="color:var(--gold)">11,39%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS04 Bastidores</span><div class="bar-track"><div class="bar-fill" style="width:27%;background:#1E4ED8"></div></div><span class="bar-val" style="color:var(--blue)">3,06%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS06 Banheiro luxo</span><div class="bar-track"><div class="bar-fill" style="width:25%;background:#B8620A"></div></div><span class="bar-val" style="color:var(--amber)">2,87%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS01 Procurando</span><div class="bar-track"><div class="bar-fill" style="width:24%;background:#B8620A"></div></div><span class="bar-val" style="color:var(--amber)">2,68%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS02 Prova social</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:#C0392B"></div></div><span class="bar-val" style="color:var(--red)">1,07%</span></div>
+      <div class="bar-row"><span class="bar-lbl">ADS03 Kevin</span><div class="bar-track"><div class="bar-fill" style="width:9%;background:#C0392B"></div></div><span class="bar-val" style="color:var(--red)">0,99%</span></div>
+      <p class="fn">ADS05 tem Body Rate 4× maior que o segundo colocado — o hook do preço ($8 mil) retém muito bem. Problema: sem conversão registrada.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Ranking por CPM</div>
+        <div class="card-sub">Menor = mais eficiente em alcance</div>
+        <div class="bar-row"><span class="bar-lbl">ADS05 $8 mil</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#2D7A50"></div></div><span class="bar-val" style="color:var(--green)">$25,47</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS01 Procurando</span><div class="bar-track"><div class="bar-fill" style="width:96%;background:#2D7A50"></div></div><span class="bar-val" style="color:var(--green)">$26,55</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS03 Kevin</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#2D7A50"></div></div><span class="bar-val">$28,29</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS06 Banheiro</span><div class="bar-track"><div class="bar-fill" style="width:89%;background:#B8620A"></div></div><span class="bar-val">$28,48</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS04 Bastidores</span><div class="bar-track"><div class="bar-fill" style="width:87%;background:#B8620A"></div></div><span class="bar-val">$29,63</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS02 Prova social</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:#C0392B"></div></div><span class="bar-val" style="color:var(--red)">$33,90</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Ranking por CTR de link</div>
+        <div class="card-sub">Maior = mais cliques proporcionais</div>
+        <div class="bar-row"><span class="bar-lbl">ADS02 Prova social</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#2D7A50"></div></div><span class="bar-val" style="color:var(--green)">1,49%</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS03 Kevin</span><div class="bar-track"><div class="bar-fill" style="width:98%;background:#2D7A50"></div></div><span class="bar-val" style="color:var(--green)">1,47%</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS01 Procurando</span><div class="bar-track"><div class="bar-fill" style="width:94%;background:#2D7A50"></div></div><span class="bar-val">1,40%</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS05 $8 mil</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#B8620A"></div></div><span class="bar-val">0,80%</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS06 Banheiro</span><div class="bar-track"><div class="bar-fill" style="width:42%;background:#B8620A"></div></div><span class="bar-val">0,95%</span></div>
+        <div class="bar-row"><span class="bar-lbl">ADS04 Bastidores</span><div class="bar-track"><div class="bar-fill" style="width:43%;background:#C0392B"></div></div><span class="bar-val">0,64%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: HOOK & RETENÇÃO -->
+  <div id="panel-hook" class="tab-panel">
+    <div class="sec-title">Análise de hook e retenção de vídeo</div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">O que é Hook Rate e Body Rate?</div>
+      <div class="card-sub" style="margin-bottom:0">Métricas exclusivas de vídeo — fundamentais para otimizar criativos</div>
+      <div class="two-col" style="margin-top:14px;margin-bottom:0">
+        <div style="background:var(--blue-light);border-radius:8px;padding:14px">
+          <div style="font-size:12px;font-weight:800;color:var(--blue);margin-bottom:6px">📍 Hook Rate</div>
+          <div style="font-size:12px;color:#1E3A8A;line-height:1.6">% do público que assistiu os primeiros 3 segundos do vídeo. Mede se a abertura (hook) é forte o suficiente para parar o scroll. <strong>Benchmark ideal: acima de 25%.</strong> Abaixo de 20% = hook fraco.</div>
+        </div>
+        <div style="background:var(--gold-light);border-radius:8px;padding:14px">
+          <div style="font-size:12px;font-weight:800;color:#7A5C00;margin-bottom:6px">📊 Body Rate</div>
+          <div style="font-size:12px;color:#5C4A00;line-height:1.6">% do público que continuou assistindo além do início. Mede se o conteúdo do meio do vídeo retém atenção. <strong>Benchmark ideal: acima de 10%.</strong> Abaixo de 5% = corpo do vídeo fraco.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mapa de retenção — Hook vs Body por criativo</div>
+      <div class="card-sub">Quadrante ideal: Hook alto + Body alto. ADS05 é o único com Body Rate competitivo.</div>
+      <div style="height:260px;position:relative">
+        <canvas id="hookBodyChart"></canvas>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Paradoxo do ADS05</div>
+        <div class="card-sub">Body Rate 11,4% — mais alto da conta. Mas sem conversão.</div>
+        <div class="insight-card ic-gold" style="margin-top:0">
+          <div class="insight-title">O vídeo retém bem mas não converte</div>
+          <div class="insight-text">ADS05 "$8 mil dólares" tem o melhor Body Rate da conta (11,4%) — as pessoas assistem o vídeo inteiro. Mas zero conversas registradas. Diagnóstico: o hook do preço chama atenção mas o CTA final está fraco, ou o valor citado está afastando o lead (parece caro ou parece barato demais para o Perfil A). Testar o mesmo hook com CTA diferente.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Paradoxo do ADS03</div>
+        <div class="card-sub">Melhor CPL mas Body Rate baixíssimo (0,99%)</div>
+        <div class="insight-card ic-info" style="margin-top:0">
+          <div class="insight-title">O rosto do Kelvin converte rápido</div>
+          <div class="insight-text">ADS03 "Kevin" tem o pior Body Rate — as pessoas não ficam assistindo. Mas tem o melhor CPL. Isso indica que o hook do Kelvin convence rapidamente — quem vai converter clica nos primeiros segundos, sem precisar assistir o vídeo inteiro. É o comportamento ideal para um anúncio de resposta direta.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Radar comparativo — todos os criativos</div>
+      <div class="card-sub">Visão multidimensional de cada anúncio</div>
+      <div style="height:300px;position:relative">
+        <canvas id="radarChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: INSIGHTS -->
+  <div id="panel-insights" class="tab-panel">
+    <div class="sec-title">Insights estratégicos para a conta</div>
+
+    <div class="insight-card ic-gold">
+      <div class="insight-title">O rosto do Kelvin é o maior ativo da conta <span class="priority-tag pt-info">INSIGHT CHAVE</span></div>
+      <div class="insight-text">ADS03 [KEVIN] tem o melhor CPL ($16,89) com o segundo maior alcance (2.488). Confirma o que o benchmark recomenda: "rosto do dono é o produto." O americano do Perfil A compra de quem ele "conhece" — o vídeo do Kelvin cria essa conexão. É o template que deve ser replicado e escalado primeiro.</div>
+    </div>
+
+    <div class="insight-card ic-danger">
+      <div class="insight-title">Nenhum criativo passou do benchmark de Hook Rate (25%) <span class="priority-tag pt-high">CRÍTICO</span></div>
+      <div class="insight-text">O melhor Hook Rate da conta é 25,1% (ADS04 Bastidores) — exatamente no limite. Os outros 5 ficaram abaixo. Isso significa que a maioria das pessoas passa pelo anúncio sem parar. Cada ponto de Hook Rate abaixo de 25% representa volume de audiência desperdiçado — CPM pago mas vídeo não assistido. Prioridade: criar hooks mais fortes para os próximos criativos.</div>
+    </div>
+
+    <div class="insight-card ic-warn">
+      <div class="insight-title">Body Rate coletivo está crítico — ninguém assiste o meio do vídeo <span class="priority-tag pt-high">CRÍTICO</span></div>
+      <div class="insight-text">Exceto ADS05 (11,4%), todos os vídeos têm Body Rate abaixo de 3,1%. Isso indica que o conteúdo do meio do vídeo está perdendo o público rapidamente após o hook. O problema não é só a abertura — o corpo do vídeo precisa de mais ritmo, mais edição, ou os vídeos são longos demais para o formato de anúncio.</div>
+    </div>
+
+    <div class="insight-card ic-warn">
+      <div class="insight-title">ADS02 Prova Social tem o maior CPM ($33,90) e gasto ($166) <span class="priority-tag pt-med">ATENÇÃO</span></div>
+      <div class="insight-text">ADS02 foi o anúncio que mais recebeu investimento ($166,42) mas tem o CPM mais alto de todos ($33,90) e ranking de Qualidade "abaixo da média". Isso sugere que o algoritmo julgou esse criativo como menos relevante para o público, encarecendo a entrega. Com o mesmo orçamento aplicado no ADS03, seriam geradas ~10 conversas adicionais.</div>
+    </div>
+
+    <div class="insight-card ic-danger">
+      <div class="insight-title">ADS04 e ADS05 com $76 gastos e zero conversão registrada <span class="priority-tag pt-high">PERDA</span></div>
+      <div class="insight-text">$76,28 investidos entre ADS04 (Bastidores, $50,96) e ADS05 ($8 mil, $25,32) sem nenhuma conversa registrada. Dois cenários: (1) orçamento foi insuficiente para o algoritmo sair da fase de aprendizado, (2) o CTA final é fraco. ADS05 tem ótimo Body Rate — o conteúdo é bom. O problema provavelmente está no fechamento do vídeo e no CTA.</div>
+    </div>
+
+    <div class="insight-card ic-ok">
+      <div class="insight-title">Ângulo financeiro (ADS05) retém melhor — mas precisa de CTA <span class="priority-tag pt-low">OPORTUNIDADE</span></div>
+      <div class="insight-text">O hook de preço "$8 mil dólares" retém o público com Body Rate 11,4% — 4× melhor que a média. Isso valida que o americano do Perfil A se interessa por valor/ROI. Esse ângulo precisa ser reaproveitado com um CTA mais forte e um caminho claro para conversa. Potencial de se tornar o melhor criativo da conta com ajustes simples.</div>
+    </div>
+
+    <div class="insight-card ic-info">
+      <div class="insight-title">Todos os 6 anúncios são vídeo — falta diversificação de formato <span class="priority-tag pt-info">OPORTUNIDADE</span></div>
+      <div class="insight-text">100% dos criativos são vídeo. O benchmark recomenda carrossel antes/depois como segundo formato prioritário — CTR 20–30% maior no nicho de home remodeling. Adicionar 1–2 carrosséis ao mix vai reduzir CPM e abrir novos públicos que consomem conteúdo estático.</div>
+    </div>
+  </div>
+
+  <!-- TAB: NOVOS CRIATIVOS -->
+  <div id="panel-novos" class="tab-panel">
+    <div class="sec-title">Blueprint para novos criativos — baseado nos dados</div>
+
+    <div class="dossier" style="margin-bottom:14px">
+      <div class="dossier-title">O que os dados dizem para <em>replicar e escalar</em></div>
+      <div class="dossier-sub">Combinando ADS03 (melhor CPL) + ADS04 (melhor hook) + ADS05 (melhor retenção)</div>
+      <div class="dossier-grid">
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">Do ADS03</div>
+          <div class="dossier-item-val" style="font-size:13px">Rosto do Kelvin + voz direta</div>
+          <div class="dossier-item-sub">Converte rápido, CPL $16,89</div>
+        </div>
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">Do ADS04</div>
+          <div class="dossier-item-val" style="font-size:13px">Hook de bastidores / processo</div>
+          <div class="dossier-item-sub">Hook Rate mais alto: 25,1%</div>
+        </div>
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">Do ADS05</div>
+          <div class="dossier-item-val" style="font-size:13px">Ângulo de valor / ROI</div>
+          <div class="dossier-item-sub">Body Rate mais alto: 11,4%</div>
+        </div>
+        <div class="dossier-item">
+          <div class="dossier-item-lbl">Formato novo</div>
+          <div class="dossier-item-val" style="font-size:13px">Carrossel antes/depois</div>
+          <div class="dossier-item-sub">Nenhum carrossel testado ainda</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-title">6 criativos prioritários para construir</div>
+
+    <div class="insight-card ic-gold">
+      <div class="insight-title">NC01 — Kelvin to Camera + Bastidores (hook) <span class="priority-tag pt-info">PRIORIDADE MÁXIMA</span></div>
+      <div class="insight-text"><strong>Estrutura:</strong> Hook 0–3s: câmera mostrando reforma em andamento (bastidores — hook 25%+) → corte para Kelvin na câmera: "Hi, I'm Kelvin. This is a kitchen we're finishing right here in Horizon West. If yours looks like it did before — here's how to fix it." → CTA: "Send me a message and I'll give you a real estimate."<br><br><strong>Por que vai performar:</strong> combina o Hook Rate do ADS04 (bastidores = curioso) com o poder de conversão do ADS03 (rosto do Kelvin = confiança). Estimativa de CPL: $12–15.</div>
+    </div>
+
+    <div class="insight-card ic-gold">
+      <div class="insight-title">NC02 — Carrossel Antes/Depois (formato novo) <span class="priority-tag pt-info">PRIORIDADE MÁXIMA</span></div>
+      <div class="insight-text"><strong>Estrutura:</strong> Slide 1 hook: "Your bathroom doesn't have to look like this [foto before]" → Slides 2–3: transformação real de projetos → Slide 4: depoimento de cliente em texto → Slide 5: "Bath remodels starting at $5,000. Free consultation." → CTA: Send Message.<br><br><strong>Por que vai performar:</strong> nenhum criativo em carrossel foi testado ainda. Carrossel gera CTR 20–30% maior no nicho visual. CPM tende a ser menor que vídeo.</div>
+    </div>
+
+    <div class="insight-card ic-info">
+      <div class="insight-title">NC03 — Kelvin + Ângulo ROI (reparar ADS05) <span class="priority-tag pt-med">ALTA PRIORIDADE</span></div>
+      <div class="insight-text"><strong>Estrutura:</strong> Hook: "A kitchen remodel in Winter Garden adds up to $20,000 to your home value." (ângulo ROI que funcionou no ADS05) → Kelvin na câmera: "I'm Kelvin. We do this every week. Here's what it looks like." → antes/depois rápido → CTA forte: "Message me for a free quote — no pressure."<br><br><strong>Por que vai performar:</strong> conserta o ADS05 — mantém o hook financeiro que reteve bem (Body Rate 11%) mas adiciona rosto do Kelvin e CTA explícito.</div>
+    </div>
+
+    <div class="insight-card ic-info">
+      <div class="insight-title">NC04 — "Fixed Price Guarantee" (ângulo não testado) <span class="priority-tag pt-med">ALTA PRIORIDADE</span></div>
+      <div class="insight-text"><strong>Estrutura:</strong> Hook: "Tired of contractors who change the price mid-project?" → Kelvin: "At KG, the price we quote is the price you pay. No surprises, no add-ons." → projeto concluído em cena → CTA: "Get your fixed-price quote today."<br><br><strong>Por que vai performar:</strong> ataca a dor #2 do benchmark (budget que estoura). Nenhum concorrente local está comunicando isso claramente. Gap direto de mercado.</double></div>
+    </div>
+
+    <div class="insight-card ic-warn">
+      <div class="insight-title">NC05 — Hyper-local (bairros pelo nome) <span class="priority-tag pt-med">MÉDIO PRAZO</span></div>
+      <div class="insight-text"><strong>Estrutura:</strong> Hook: "We've remodeled 12 kitchens in Horizon West this year." → fotos de projetos da região → Kelvin: "Your neighbors trust us. Here's why." → depoimento de cliente local → CTA Messenger.<br><br><strong>Por que vai performar:</strong> S&W Kitchens domina localmente com exatamente essa estratégia. Mencionar Horizon West, Hamlin, Winter Garden nos primeiros segundos aumenta relevância para o Perfil A.</div>
+    </div>
+
+    <div class="insight-card ic-ok">
+      <div class="insight-title">NC06 — UGC (cliente gravando depoimento) <span class="priority-tag pt-low">MÉDIO PRAZO</span></div>
+      <div class="insight-text"><strong>Estrutura:</strong> Cliente real (americano do Perfil A) gravando depoimento curto no celular, mostrando a cozinha ou banheiro reformado. "We've been thinking about this for years... KG did it in 14 days." → CTA do KG no final.<br><br><strong>Por que vai performar:</strong> UGC é o formato com maior taxa de conversão no nicho hoje. Parece orgânico, não parece anúncio. Baixo custo de produção — pedir para 2–3 clientes satisfeitos gravarem 30 segundos.</div>
+    </div>
+
+    <div class="card" style="margin-top:8px">
+      <div class="card-title">Cronograma de produção sugerido</div>
+      <div class="card-sub">Prioridade baseada em potencial de CPL e facilidade de produção</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>#</th><th>Criativo</th><th>Formato</th><th>Produção</th><th>Prioridade</th><th>Prazo</th></tr></thead>
+          <tbody>
+            <tr><td style="font-family:var(--mono);color:var(--gold);font-weight:700">NC01</td><td>Kelvin + Bastidores</td><td><span class="badge b-blue">Vídeo</span></td><td><span class="badge b-amber">Médio</span></td><td style="color:var(--green);font-weight:700">Máxima</td><td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">0–5 dias</td></tr>
+            <tr><td style="font-family:var(--mono);color:var(--gold);font-weight:700">NC02</td><td>Carrossel Antes/Depois</td><td><span class="badge b-green">Carrossel</span></td><td><span class="badge b-green">Baixo</span></td><td style="color:var(--green);font-weight:700">Máxima</td><td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">0–5 dias</td></tr>
+            <tr><td style="font-family:var(--mono);color:var(--gold);font-weight:700">NC03</td><td>Kelvin + ROI</td><td><span class="badge b-blue">Vídeo</span></td><td><span class="badge b-amber">Médio</span></td><td style="color:var(--amber);font-weight:700">Alta</td><td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">5–10 dias</td></tr>
+            <tr><td style="font-family:var(--mono);color:var(--gold);font-weight:700">NC04</td><td>Fixed Price Guarantee</td><td><span class="badge b-blue">Vídeo</span></td><td><span class="badge b-green">Baixo</span></td><td style="color:var(--amber);font-weight:700">Alta</td><td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">5–10 dias</td></tr>
+            <tr><td style="font-family:var(--mono);color:var(--gold);font-weight:700">NC05</td><td>Hyper-local</td><td><span class="badge b-blue">Vídeo</span></td><td><span class="badge b-amber">Médio</span></td><td style="color:var(--ink3);font-weight:700">Média</td><td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">10–20 dias</td></tr>
+            <tr><td style="font-family:var(--mono);color:var(--gold);font-weight:700">NC06</td><td>UGC Cliente</td><td><span class="badge b-blue">Vídeo</span></td><td><span class="badge b-red">Alto</span></td><td style="color:var(--ink3);font-weight:700">Média</td><td style="font-family:var(--mono);font-size:11px;color:var(--ink3)">20–30 dias</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<button class="scroll-top" id="scrollBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+function sw(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+window.addEventListener('scroll', () => {
+  document.getElementById('scrollBtn').classList.toggle('show', window.scrollY > 300);
+});
+
+const C = Chart;
+C.defaults.font.family = "'JetBrains Mono', monospace";
+C.defaults.font.size = 11;
+C.defaults.color = '#6B6B62';
+const grid = 'rgba(0,0,0,0.06)';
+
+// CPL CHART
+new C(document.getElementById('cplChart'), {
+  type: 'bar',
+  data: {
+    labels: ['ADS03\nKevin', 'ADS06\nBanheiro Luxo', 'ADS02\nProva Social', 'ADS01\nProcurando'],
+    datasets: [{
+      data: [16.89, 22.19, 23.77, 26.52],
+      backgroundColor: ['#2D7A50','#B8620A','#B8620A','#C0392B'],
+      borderRadius: 6, borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => '$' + c.parsed.y.toFixed(2) + ' por conversa' } }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        grid: { color: grid }, max: 35,
+        ticks: { callback: v => '$' + v },
+        afterDraw(chart) {
+          const ctx = chart.ctx, xS = chart.scales.x, yS = chart.scales.y;
+          const y = yS.getPixelForValue(25);
+          ctx.save(); ctx.setLineDash([5,5]);
+          ctx.strokeStyle = '#C0392B'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.moveTo(xS.left, y); ctx.lineTo(xS.right, y); ctx.stroke();
+          ctx.fillStyle = '#C0392B'; ctx.font = '10px JetBrains Mono';
+          ctx.fillText('limite $25', xS.right - 80, y - 5);
+          ctx.restore();
+        }
+      }
+    }
+  }
+});
+
+// SPEND DONUT
+new C(document.getElementById('spendChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['ADS02 Prova Social','ADS03 Kevin','ADS06 Banheiro','ADS04 Bastidores','ADS01 Procurando','ADS05 $8 mil'],
+    datasets: [{
+      data: [166.42, 135.15, 110.95, 50.96, 26.52, 25.32],
+      backgroundColor: ['#C0392B','#2D7A50','#1E4ED8','#B8620A','#A8A89F','#C8A84B'],
+      borderWidth: 0, hoverOffset: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '65%',
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 8, padding: 8, font: { size: 9 } } },
+      tooltip: { callbacks: { label: c => '$' + c.parsed.toFixed(2) + ' (' + Math.round(c.parsed/515.37*100) + '%)' } }
+    }
+  }
+});
+
+// CONV BAR
+new C(document.getElementById('convChart'), {
+  type: 'bar',
+  data: {
+    labels: ['ADS03', 'ADS02', 'ADS06', 'ADS01', 'ADS04', 'ADS05'],
+    datasets: [{
+      data: [8, 7, 5, 1, 0, 0],
+      backgroundColor: ['#2D7A50','#B8620A','#1E4ED8','#C8A84B','#A8A89F','#A8A89F'],
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: grid }, ticks: { stepSize: 2 } }
+    }
+  }
+});
+
+// HOOK vs BODY SCATTER
+new C(document.getElementById('hookBodyChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'Criativos',
+      data: [
+        { x: 19.4, y: 2.68, label: 'ADS01\nProcurando' },
+        { x: 22.6, y: 1.07, label: 'ADS02\nProva Social' },
+        { x: 22.8, y: 0.99, label: 'ADS03\nKevin ★' },
+        { x: 25.1, y: 3.06, label: 'ADS04\nBastidores' },
+        { x: 23.1, y: 11.39, label: 'ADS05\n$8 mil' },
+        { x: 18.7, y: 2.87, label: 'ADS06\nBanheiro' },
+      ],
+      backgroundColor: ['#B8620A','#C0392B','#2D7A50','#1E4ED8','#C8A84B','#A8A89F'],
+      pointRadius: 10, pointHoverRadius: 13
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: c => {
+            const labels = ['ADS01','ADS02','ADS03 ★','ADS04','ADS05','ADS06'];
+            return labels[c.dataIndex] + ' — Hook: ' + c.parsed.x + '% / Body: ' + c.parsed.y + '%';
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Hook Rate (%)' },
+        grid: { color: grid }, min: 15, max: 28,
+        afterDraw(chart) {
+          const ctx = chart.ctx, xS = chart.scales.x, yS = chart.scales.y;
+          const x = xS.getPixelForValue(25);
+          ctx.save(); ctx.setLineDash([4,4]);
+          ctx.strokeStyle = '#1E4ED8'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(x, yS.top); ctx.lineTo(x, yS.bottom); ctx.stroke();
+          ctx.fillStyle = '#1E4ED8'; ctx.font = '10px JetBrains Mono';
+          ctx.fillText('meta 25%', x + 3, yS.top + 12); ctx.restore();
+        }
+      },
+      y: {
+        title: { display: true, text: 'Body Rate (%)' },
+        grid: { color: grid },
+        afterDraw(chart) {
+          const ctx = chart.ctx, xS = chart.scales.x, yS = chart.scales.y;
+          const y = yS.getPixelForValue(10);
+          ctx.save(); ctx.setLineDash([4,4]);
+          ctx.strokeStyle = '#C8A84B'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(xS.left, y); ctx.lineTo(xS.right, y); ctx.stroke();
+          ctx.fillStyle = '#C8A84B'; ctx.font = '10px JetBrains Mono';
+          ctx.fillText('meta 10%', xS.left + 4, y - 4); ctx.restore();
+        }
+      }
+    }
+  }
+});
+
+// RADAR
+new C(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['CPL\n(invertido)', 'Hook Rate', 'Body Rate', 'CTR', 'Alcance', 'CPM\n(invertido)'],
+    datasets: [
+      {
+        label: 'ADS03 Kevin ★',
+        data: [100, 91, 9, 99, 100, 82],
+        borderColor: '#2D7A50', backgroundColor: 'rgba(45,122,80,0.15)', pointBackgroundColor: '#2D7A50', borderWidth: 2
+      },
+      {
+        label: 'ADS05 $8 mil',
+        data: [0, 92, 100, 54, 21, 100],
+        borderColor: '#C8A84B', backgroundColor: 'rgba(200,168,75,0.1)', pointBackgroundColor: '#C8A84B', borderWidth: 2
+      },
+      {
+        label: 'ADS04 Bastidores',
+        data: [0, 100, 27, 43, 33, 78],
+        borderColor: '#1E4ED8', backgroundColor: 'rgba(30,78,216,0.08)', pointBackgroundColor: '#1E4ED8', borderWidth: 2
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14 } } },
+    scales: {
+      r: {
+        grid: { color: 'rgba(0,0,0,0.08)' },
+        pointLabels: { font: { size: 10 } },
+        ticks: { display: false }, min: 0, max: 100
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
